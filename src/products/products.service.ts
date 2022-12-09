@@ -1,26 +1,71 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { Product } from './entities/product.entity';
 
 @Injectable()
 export class ProductsService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  private readonly logger = new Logger(ProductsService.name);
+
+  constructor(
+    @InjectRepository(Product)
+    private readonly productsRepository: Repository<Product>
+  ) {}
+
+  async create(createProductDto: CreateProductDto) {
+    try {
+      const product = this.productsRepository.create(createProductDto);
+      await this.productsRepository.save(product);
+
+      return product;
+    } catch (error) {
+      this._handleDatabaseExecptions(error);
+    }
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll() {
+    return await this.productsRepository.find({});
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: string) {
+    const product = await this.productsRepository.findOneBy({ id });
+
+    if (!product) {
+      throw new NotFoundException(`Product with id ${id} not found.`);
+    }
+
+    return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    const product = await this.productsRepository.delete(id);
+
+    if (!product) {
+      throw new NotFoundException(`Product with id ${id} not found.`);
+    }
+
+    return product;
+  }
+
+  private _handleDatabaseExecptions(error: any) {
+    this.logger.error(error);
+
+    if (error.code === '23505') {
+      throw new ConflictException('Product already exists');
+    }
+
+    throw new InternalServerErrorException(error);
   }
 }
