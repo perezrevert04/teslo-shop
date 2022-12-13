@@ -1,19 +1,18 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
   ParseUUIDPipe,
-  NotFoundException,
+  Patch,
+  Post,
   Query
 } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { ProductsService } from './products.service';
 
 @Controller('products')
 export class ProductsController {
