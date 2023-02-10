@@ -8,7 +8,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductImage } from './entities/product-image.entity';
@@ -19,6 +19,7 @@ export class ProductsService {
   private readonly logger = new Logger(ProductsService.name);
 
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
     @InjectRepository(ProductImage)
@@ -88,24 +89,40 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    const { images = [], ...productData } = updateProductDto;
+    const { images, ...toUpdate } = updateProductDto;
 
     const product = await this.productsRepository.preload({
       id,
-      ...productData,
-      images: images.map((image) => {
-        return this.productImagesRepository.create({ url: image });
-      })
+      ...toUpdate
     });
 
     if (!product) {
       throw new NotFoundException(`Product with id ${id} not found.`);
     }
 
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      await this.productsRepository.save(product);
+      if (images) {
+        await queryRunner.manager.delete(ProductImage, { product: { id } });
+
+        product.images = images.map((image) => {
+          return this.productImagesRepository.create({ url: image });
+        });
+      }
+
+      await queryRunner.manager.save(product);
+      await queryRunner.commitTransaction();
+
+      // await this.productsRepository.save(product);
+      return this.findeOnePlain(id);
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       this._handleDatabaseExecptions(error);
+    } finally {
+      await queryRunner.release();
     }
 
     return { ...product, images };
