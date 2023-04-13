@@ -8,8 +8,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { FilesService } from './files.service';
-import { fileFilter } from './helpers/file-filter.helper';
-import { fileNamer } from './helpers/file-name.helper';
+import { fileFilter, fileNamer } from './helpers/index.helper';
 
 @Controller('files')
 export class FilesController {
