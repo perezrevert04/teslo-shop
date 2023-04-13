@@ -13,10 +13,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { FilesService } from './files.service';
 import { fileFilter, fileNamer } from './helpers/index.helper';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('files')
 export class FilesController {
-  constructor(private readonly filesService: FilesService) {}
+  constructor(
+    private readonly filesService: FilesService,
+    private readonly configService: ConfigService
+  ) {}
 
   @Get('product/:imageName')
   findProductImage(
@@ -43,7 +47,8 @@ export class FilesController {
       throw new BadRequestException('No file uploaded');
     }
 
-    const secureUrl = `${file.filename}`;
+    const host = this.configService.get('HOST_API');
+    const secureUrl = `${host}/files/product/${file.filename}`;
 
     return secureUrl;
   }
