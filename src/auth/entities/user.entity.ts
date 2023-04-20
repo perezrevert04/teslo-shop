@@ -8,13 +8,15 @@ export class User {
   @Column('text', { unique: true })
   email: string;
 
-  @Column('text')
+  @Column('text', {
+    select: false
+  })
   password: string;
 
   @Column('text')
   fullname: string;
 
-  @Column('bool', { default: true })
+  @Column('bool', { default: true, select: false })
   isActive: boolean;
 
   @Column({

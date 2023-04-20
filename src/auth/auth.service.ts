@@ -1,13 +1,15 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException
+  InternalServerErrorException,
+  UnauthorizedException
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -25,16 +27,29 @@ export class AuthService {
         password: hashedPassword
       });
 
-      delete user.password;
-
       return await this.userRepository.save(user);
     } catch (error) {
       this.handleDBError(error);
     }
   }
 
+  async login(loginUserDto: LoginUserDto) {
+    const { email, password } = loginUserDto;
+
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: { email: true, password: true }
+    });
+
+    if (!user || !bcrypt.compareSync(password, user.password))
+      throw new UnauthorizedException('Invalid credentials');
+
+    return user;
+  }
+
   private handleDBError(error: any): never {
     if (error.code === '23505') throw new BadRequestException(error.detail);
+    console.log(error);
 
     throw new InternalServerErrorException('Internal Server Error');
   }
