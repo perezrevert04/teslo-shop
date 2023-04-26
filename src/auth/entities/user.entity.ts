@@ -22,7 +22,7 @@ export class User {
   @Column('text')
   fullname: string;
 
-  @Column('bool', { default: true, select: false })
+  @Column('bool', { default: true })
   isActive: boolean;
 
   @Column({
