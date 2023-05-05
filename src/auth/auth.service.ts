@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
   UnauthorizedException
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
@@ -11,7 +12,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { User } from './entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -23,13 +23,7 @@ export class AuthService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      const { password, ...rest } = createUserDto;
-      const hashedPassword = bcrypt.hashSync(password, 10);
-      const user = this.userRepository.create({
-        ...rest,
-        password: hashedPassword
-      });
-
+      const user = this.userRepository.create(createUserDto);
       const createdUser = await this.userRepository.save(user);
 
       delete createdUser.password;

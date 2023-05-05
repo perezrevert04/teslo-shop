@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import { Product } from 'src/products/entities/product.entity';
 import {
   BeforeInsert,
@@ -40,6 +41,7 @@ export class User {
   @BeforeInsert()
   checkFieldsBeforeInsert() {
     this.email = this.email.toLowerCase().trim();
+    this.password = bcrypt.hashSync(this.password, 10);
   }
 
   @BeforeUpdate()

@@ -29,15 +29,15 @@ interface SeedData {
 export const initialData: SeedData = {
   users: [
     {
-      email: 'test@circulorojo.es',
+      email: 'cperez@circulorojo.es',
       fullname: 'Test User',
-      password: '123456',
+      password: 'DisplayNone123',
       roles: ['admin']
     },
     {
-      email: 'test2@circulorojo.es',
+      email: 'cperez2@circulorojo.es',
       fullname: 'Test User',
-      password: '123456',
+      password: 'DisplayNone123',
       roles: ['admin']
     }
   ],
