@@ -31,6 +31,12 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
 
+  @Get()
+  @Auth()
+  checkAuthStatus(@GetUser() user: User) {
+    return this.authService.checkAuthStatus(user);
+  }
+
   @Get('private')
   @UseGuards(AuthGuard())
   testingPrivateRoute(
