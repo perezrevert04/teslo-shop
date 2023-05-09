@@ -56,14 +56,15 @@ $ npm run start:prod
 3. Build the database with ```npm run docker:db``` or ```docker-compose up -d```
 
 
-4. Execute SEED:
-```
-localhost:3000/api/seed
-```
-
-5. Execute the app:
+4. Execute the app:
 ```
 npm run start:dev
+```
+
+
+5. Execute SEED (optional):
+```
+{host}:{port}/api/seed
 ```
 
 
